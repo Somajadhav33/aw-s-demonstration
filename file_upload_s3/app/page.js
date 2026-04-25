@@ -30,6 +30,7 @@ export default function Home() {
         body: formData,
       });
       const data = await res.json();
+      setFile(null);
       setMessage(data.message);
       fetchFiles();
     } catch {
@@ -45,7 +46,8 @@ export default function Home() {
   };
 
   const handleDelete = async (fileName) => {
-    await fetch(`/api/delete/${fileName}`, { method: "DELETE" });
+    await fetch(`/api/file/${fileName}`, { method: "DELETE" });
+    window.alert("Confirm Delete ?");
     setMessage("File deleted successfully");
     fetchFiles();
   };
