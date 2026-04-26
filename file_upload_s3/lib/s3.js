@@ -2,14 +2,15 @@
 import { S3Client } from "@aws-sdk/client-s3";
 
 // Create one S3 client instance and reuse it across all API routes
+// Instead of creating a new connection every time
 const s3 = new S3Client({
   // Which AWS region your bucket is in
   region: process.env.AWS_REGION,
 
   credentials: {
-    // Your IAM user access key
+    // Your IAM user access key from .env.local
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    // Your IAM user secret key
+    // Your IAM user secret key from .env.local
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
