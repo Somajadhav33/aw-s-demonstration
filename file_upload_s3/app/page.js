@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 export default function Home() {
   const [file, setFile] = useState(null);
   const [files, setFiles] = useState([]);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState({ text: "", type: "" });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -19,9 +19,13 @@ export default function Home() {
   };
 
   const handleUpload = async () => {
-    if (!file) return setMessage("Please select a file first");
+    if (!file)
+      return setMessage({
+        text: "Please select a file first",
+        type: "warning",
+      });
     setLoading(true);
-    setMessage("");
+    setMessage({ text: "", type: "" });
     const formData = new FormData();
     formData.append("file", file);
     try {
@@ -31,10 +35,10 @@ export default function Home() {
       });
       const data = await res.json();
       setFile(null);
-      setMessage(data.message);
+      setMessage({ text: data.message, type: "success" });
       fetchFiles();
     } catch {
-      setMessage("Upload failed");
+      setMessage({ text: "Upload failed", type: "error" });
     }
     setLoading(false);
   };
@@ -46,10 +50,24 @@ export default function Home() {
   };
 
   const handleDelete = async (fileName) => {
-    await fetch(`/api/file/${fileName}`, { method: "DELETE" });
-    window.alert("Confirm Delete ?");
-    setMessage("File deleted successfully");
-    fetchFiles();
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this file?",
+    );
+    if (!confirmed) return;
+    try {
+      await fetch(`/api/file/${fileName}`, { method: "DELETE" });
+      setMessage({ text: "File deleted successfully", type: "success" });
+      fetchFiles();
+    } catch {
+      setMessage({ text: "Delete failed", type: "error" });
+    }
+  };
+
+  // Message style based on type
+  const messageStyles = {
+    success: "bg-green-50 text-green-700 border border-green-200",
+    error: "bg-red-50 text-red-700 border border-red-200",
+    warning: "bg-yellow-50 text-yellow-700 border border-yellow-200",
   };
 
   return (
@@ -86,11 +104,15 @@ export default function Home() {
               {loading ? "Uploading..." : "Upload to S3"}
             </button>
 
-            {message && (
+            {/* Status Message */}
+            {message.text && (
               <p
-                className={`text-sm ${message !== "Upload failed" ? " text-green-600" : " text-red-600"} font-medium`}
+                className={`text-sm font-medium px-4 py-2.5 rounded-lg ${messageStyles[message.type]}`}
               >
-                {message}
+                {message.type === "success" && "✓ "}
+                {message.type === "error" && "✕ "}
+                {message.type === "warning" && "⚠ "}
+                {message.text}
               </p>
             )}
           </div>
